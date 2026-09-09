@@ -170,17 +170,17 @@ test('continuous typing merges but formatting and typing after undo create separ
 });
 test('local font size preserves Markdown headings, emphasis, lists and portable classes', () => {
   const input = '# 标题\n\n- **重点内容**\n- 普通内容';
-  const output = sizeSelection(input, 0, input.length, 24);
+  const output = sizeSelection(input, 0, input.length, 38);
   const doc = parse(output.markdown);
-  assert.equal(doc.querySelector('h1 .resume-size-24').textContent, '标题');
+  assert.equal(doc.querySelector('h1 .resume-size-38').textContent, '标题');
   assert.equal(doc.querySelector('li strong').textContent, '重点内容');
   assert.equal(doc.querySelectorAll('li').length, 2);
   assert.equal(doc.querySelectorAll('[style]').length, 0);
   assert.equal(documentName(output.markdown), '标题');
   const second = sizeSelection(output.markdown, output.start, output.end, 11);
-  assert.equal(parse(second.markdown).querySelectorAll('.resume-size-24').length, 0);
+  assert.equal(parse(second.markdown).querySelectorAll('.resume-size-38').length, 0);
   assert.equal(parse(second.markdown).querySelectorAll('.resume-size-11').length, 3);
-  for (const value of [10,25,13.5,NaN]) assert.equal(sizeSelection('test',0,4,value),null);
+  for (const value of [10,25,27,31,37,39,13.5,NaN]) assert.equal(sizeSelection('test',0,4,value),null);
   assert.equal(sizeSelection('test',1,1,16),null);
 });
 

@@ -2,6 +2,7 @@ import type { Settings } from './resume';
 
 export type EditorSnapshot = { markdown: string; settings: Settings; start: number; end: number };
 export type EditorHistory = { present: EditorSnapshot; past: EditorSnapshot[]; group: string | null; at: number };
+export const LOCAL_FONT_SIZES = [...Array.from({ length: 14 }, (_, index) => index + 11), 26, 28, 30, 32, 34, 36, 38] as const;
 export function recordEdit(state: EditorHistory, next: EditorSnapshot, before: { start: number; end: number }, group: string | null, at: number): EditorHistory {
   if (state.present.markdown === next.markdown && JSON.stringify(state.present.settings) === JSON.stringify(next.settings)) return state;
   const sameSelection = before.start === state.present.start && before.end === state.present.end;
@@ -35,10 +36,10 @@ export function boldSelection(markdown: string, start: number, end: number) {
 
 // Fixed CSS classes are portable in saved Markdown and cannot introduce arbitrary CSS.
 export function sizeSelection(markdown: string, start: number, end: number, size: number) {
-  if (!Number.isInteger(size) || size < 11 || size > 24 || start < 0 || end > markdown.length || start >= end) return null;
+  if (!LOCAL_FONT_SIZES.includes(size as (typeof LOCAL_FONT_SIZES)[number]) || start < 0 || end > markdown.length || start >= end) return null;
   const selected = markdown.slice(start, end);
   // Reusing the selection created by this tool updates the size instead of nesting it.
-  const clean = selected.replace(/<span class="resume-size-(?:1[1-9]|2[0-4])">([^<>]*)<\/span>/g, '$1');
+  const clean = selected.replace(/<span class="resume-size-(?:1[1-9]|2[0-4]|26|28|30|32|34|36|38)">([^<>]*)<\/span>/g, '$1');
   const replacement = clean.split('\n').map((line, index) => {
     if (!line.trim()) return line;
     const beginsLine = index > 0 || start === 0 || markdown[start - 1] === '\n';

@@ -7,7 +7,7 @@ import { DEFAULTS, MAX_LENGTH, SAMPLE, STORAGE_KEY, LIBRARY_KEY, readResumeLibra
 import { SANITIZE_CONFIG } from '../lib/sanitize';
 import { measureResumePages, MM_TO_PX } from '../lib/measure-resume';
 import { loadResumeFont } from '../lib/resume-fonts';
-import { boldSelection, recordEdit, undoEdit, sizeSelection, type EditorHistory } from '../lib/editor-state';
+import { boldSelection, LOCAL_FONT_SIZES, recordEdit, undoEdit, sizeSelection, type EditorHistory } from '../lib/editor-state';
 
 const templates = [{ id: 'classic', name: '清简', desc: '清晰 · 专业' }, { id: 'modern', name: '秩序', desc: '利落 · 现代' }, { id: 'serif', name: '书卷', desc: '沉静 · 经典' }] as const;
 const subscribeToHydration = () => () => {};
@@ -359,7 +359,7 @@ function ResumeEditor({ ready }: { ready: boolean }) {
           <button className="undo-button" aria-label="撤回上一步" title={`撤回（⌘Z / Ctrl+Z），还可撤回 ${editState.past.length} 步`} disabled={!ready || !editState.past.length} onMouseDown={e => e.preventDefault()} onClick={undo}><Undo2 size={15} /><span>撤回</span><small>{editState.past.length}/5</small></button>
           <span className="toolbar-separator" />
           <button title="插入二级标题" onMouseDown={e => e.preventDefault()} onClick={() => insert('## 新的章节\n')}>H₂</button><button title="加粗选中文字（⌘B / Ctrl+B）" onMouseDown={e => e.preventDefault()} onClick={applyBold}>B</button><button title="插入列表" onMouseDown={e => e.preventDefault()} onClick={() => insert('- 描述你的经历与成果\n')}>≡</button>
-          <label className="selection-size-control" title="先选中文字，再设置局部字号"><select aria-label="选中文字字号" value="" disabled={!ready} onChange={e => applyFontSize(Number(e.target.value))}><option value="" disabled>字号</option>{Array.from({ length: 14 }, (_, i) => i + 11).map(size => <option key={size} value={size}>{size}px</option>)}</select><ChevronDown size={12} /></label>
+          <label className="selection-size-control" title="先选中文字，再设置局部字号"><select aria-label="选中文字字号" value="" disabled={!ready} onChange={e => applyFontSize(Number(e.target.value))}><option value="" disabled>字号</option>{LOCAL_FONT_SIZES.map(size => <option key={size} value={size}>{size}px</option>)}</select><ChevronDown size={12} /></label>
         </div>
         <textarea ref={editor} aria-label="简历 Markdown 内容" spellCheck={false} value={markdown} disabled={!ready} maxLength={MAX_LENGTH}
           onSelect={e => { selection.current = { start: e.currentTarget.selectionStart, end: e.currentTarget.selectionEnd }; }}
@@ -424,7 +424,7 @@ function ResumeEditor({ ready }: { ready: boolean }) {
         <p className="library-footnote">每次保存新增一个版本，不会覆盖旧版本。仅保存在当前浏览器；清理浏览器数据会丢失记录，请定期导出备份。</p>
       </section>
     </dialog>
-    <dialog ref={dialog} className="modal-dialog" onCancel={() => setHelp(false)} onClick={e => { if (e.target === e.currentTarget) setHelp(false); }}><section role="dialog" aria-modal="true" aria-labelledby="help-title" className="help-modal" onClick={e => e.stopPropagation()}><button className="modal-close" onClick={() => setHelp(false)} aria-label="关闭语法指南"><X size={20} /></button><span className="eyebrow">A LITTLE GUIDE</span><h2 id="help-title">几行文字，一份好简历。</h2><p>用简单的符号告诉我们，你希望怎样呈现。</p><dl><dt>姓名与求职方向</dt><dd><code># 林晓 · 产品设计师</code></dd><dt>章节标题</dt><dd><code>## 工作经历</code></dd><dt>公司与日期左右对齐</dt><dd><code>### 公司 · 职位 || 2023 — 至今</code></dd><dt>突出成果</dt><dd><code>- **核心成果**：描述你带来的改变</code></dd><dt>局部字号（11–24px）</dt><dd>选中文字后使用工具栏「字号」；会生成受限的 span 标记，并随 Markdown 保存。</dd><dt>撤回操作</dt><dd>⌘Z / Ctrl+Z 或点击「撤回」，最多五步，刷新后记录清空。</dd><dt>添加链接</dt><dd><code>[作品集](https://example.com)</code></dd></dl><p className="help-footnote">支持标准 Markdown 列表、引用与表格。MVP 暂不支持照片、自定义 HTML 样式或手动分页。示例中的姓名与经历均为虚构。</p><button className="button primary" onClick={() => setHelp(false)}>开始写作</button></section></dialog>
+    <dialog ref={dialog} className="modal-dialog" onCancel={() => setHelp(false)} onClick={e => { if (e.target === e.currentTarget) setHelp(false); }}><section role="dialog" aria-modal="true" aria-labelledby="help-title" className="help-modal" onClick={e => e.stopPropagation()}><button className="modal-close" onClick={() => setHelp(false)} aria-label="关闭语法指南"><X size={20} /></button><span className="eyebrow">A LITTLE GUIDE</span><h2 id="help-title">几行文字，一份好简历。</h2><p>用简单的符号告诉我们，你希望怎样呈现。</p><dl><dt>姓名与求职方向</dt><dd><code># 林晓 · 产品设计师</code></dd><dt>章节标题</dt><dd><code>## 工作经历</code></dd><dt>公司与日期左右对齐</dt><dd><code>### 公司 · 职位 || 2023 — 至今</code></dd><dt>突出成果</dt><dd><code>- **核心成果**：描述你带来的改变</code></dd><dt>局部字号（11–24px，以及 26–38px 双数）</dt><dd>选中文字后使用工具栏「字号」；会生成受限的 span 标记，并随 Markdown 保存。</dd><dt>撤回操作</dt><dd>⌘Z / Ctrl+Z 或点击「撤回」，最多五步，刷新后记录清空。</dd><dt>添加链接</dt><dd><code>[作品集](https://example.com)</code></dd></dl><p className="help-footnote">支持标准 Markdown 列表、引用与表格。MVP 暂不支持照片、自定义 HTML 样式或手动分页。示例中的姓名与经历均为虚构。</p><button className="button primary" onClick={() => setHelp(false)}>开始写作</button></section></dialog>
   </main>;
 
   function insert(text: string) {

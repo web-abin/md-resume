@@ -104,4 +104,4 @@ PDF 固定字重字体位于 `public/fonts/pdf/`，由现有 Fontsource 中文�
 
 内容编辑工具栏支持最多五步撤回，快捷键为 macOS Command+Z，Windows/Linux Ctrl+Z；按钮与快捷键共用记录。连续输入合并为一步，格式修改、导入、恢复版本和整体排版也可撤回；刷新页面会清空撤回记录，不影响草稿及手动版本保存。
 
-选中文字后，在「字号」下拉框选择 11–24px 的整数字号。使用受限的 `<span class="resume-size-18">文字</span>` 标记保存在 Markdown 中，预览、分页、PDF 和保存的版本均保留效果；不开放任意 style 样式。其他 Markdown 阅读器可能不支持此扩展字号。
+选中文字后，在「字号」下拉框选择 11–24px 的整数字号，或 26、28、30、32、34、36、38px。使用受限的 `<span class="resume-size-18">文字</span>` 标记保存在 Markdown 中，预览、分页、PDF 和保存的版本均保留效果；不开放任意 style 样式。其他 Markdown 阅读器可能不支持此扩展字号。
