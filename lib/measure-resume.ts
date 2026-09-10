@@ -1,4 +1,4 @@
-import { paginate, type ProtectedBand } from './pagination';
+import { meaningfulContentHeight, paginate, type ProtectedBand } from './pagination';
 
 export const MM_TO_PX = 96 / 25.4;
 export function measureResumePages(content: HTMLElement, margin: number) {
@@ -29,6 +29,9 @@ export function measureResumePages(content: HTMLElement, margin: number) {
         bands.push({ top: Math.max(0, rect.top - origin - 2), bottom, kind });
       }
     }
-    const totalHeight = Math.ceil(content.getBoundingClientRect().height + 2);
+    const measuredHeight = Math.ceil(content.getBoundingClientRect().height + 2);
+    // Bottom margins and fractional layout rounding can cross an A4 boundary
+    // even when no glyph does. Paginate through the last real text line only.
+    const totalHeight = meaningfulContentHeight(measuredHeight, bands);
     return paginate(totalHeight, pageHeight, bands);
 }

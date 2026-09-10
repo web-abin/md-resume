@@ -79,7 +79,21 @@ test('empty Markdown stays empty and rows with too many separators remain plain 
 
 
 // PDF paging must cover all content without cutting through protected text lines.
-import { paginate } from './lib/pagination.ts';
+import { meaningfulContentHeight, paginate } from './lib/pagination.ts';
+
+test('PDF paging drops trailing whitespace that would create an empty last page', () => {
+  const bands = [{ top: 180, bottom: 198, kind: 'line' }];
+  const totalHeight = meaningfulContentHeight(205, bands);
+  assert.equal(totalHeight, 198);
+  assert.deepEqual(paginate(totalHeight, 100, bands), [{ top: 0, height: 100 }, { top: 100, height: 98 }]);
+});
+
+test('PDF paging keeps a last page when even one text line reaches it', () => {
+  const bands = [{ top: 199, bottom: 203, kind: 'line' }];
+  const totalHeight = meaningfulContentHeight(205, bands);
+  assert.equal(totalHeight, 203);
+  assert.equal(paginate(totalHeight, 100, bands).length, 3);
+});
 
 test('PDF paging moves a boundary above a text line and keeps every pixel covered', () => {
   const pages = paginate(250, 100, [{ top: 90, bottom: 112 }]);

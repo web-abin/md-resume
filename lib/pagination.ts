@@ -4,6 +4,13 @@ export type ProtectedBand = {
   kind?: 'line' | 'item' | 'heading' | 'row' | 'blockquote';
 };
 
+/** Ignore trailing layout whitespace after the final rendered text line. */
+export function meaningfulContentHeight(measuredHeight: number, bands: ProtectedBand[]) {
+  if (!Number.isFinite(measuredHeight) || measuredHeight < 0) throw new Error('Invalid content height');
+  const textBottom = bands.reduce((bottom, band) => band.kind === 'line' ? Math.max(bottom, band.bottom) : bottom, 0);
+  return textBottom > 0 ? Math.min(measuredHeight, Math.ceil(textBottom)) : 0;
+}
+
 /** Keep text lines and short semantic blocks away from page boundaries. */
 export function paginate(totalHeight: number, pageHeight: number, bands: ProtectedBand[]) {
   if (!Number.isFinite(totalHeight) || !Number.isFinite(pageHeight) || totalHeight < 0 || pageHeight <= 0) throw new Error('Invalid page dimensions');
