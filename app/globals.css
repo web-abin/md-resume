@@ -289,3 +289,44 @@ html[data-theme=dark] .delete-version, html[data-theme=dark] .draft-status.error
 .resume-content .resume-size-34 { font-size: 34px; }
 .resume-content .resume-size-36 { font-size: 36px; }
 .resume-content .resume-size-38 { font-size: 38px; }
+
+/* Resume information rows support both `title || date` and `title || role || date`. */
+.resume-content .resume-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:1.1em;row-gap:.18em}
+.resume-content .resume-row-3{grid-template-columns:minmax(0,1.2fr) minmax(7.5em,.8fr) auto}
+.resume-content .row-main{min-width:0;overflow-wrap:anywhere}
+.resume-content .row-role{min-width:0;color:#5f7169;font-size:.86em;font-weight:500;text-align:center;overflow-wrap:anywhere}
+.resume-content .row-right{max-width:none;font-size:.84em;font-weight:400;color:#758078;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* Product and operations resumes: responsibilities are easy to scan. */
+.template-modern .resume-content .row-role{justify-self:center;border-radius:999px;padding:.08em .65em;background:color-mix(in srgb,var(--accent) 10%,white);color:var(--accent)}
+.template-modern .resume-content h3.resume-row{padding:.18em .5em;border-left:2px solid color-mix(in srgb,var(--accent) 40%,white)}
+
+/* Editorial resumes: restrained metadata treatment. */
+.template-serif .resume-content h3.resume-row{border-bottom:1px solid color-mix(in srgb,var(--accent) 25%,white);padding-bottom:.28em}
+.template-serif .resume-content .row-role{font-style:italic;color:#766b61}
+.template-serif .resume-content .row-right{font-style:italic}
+
+/* Engineering resumes: compact hierarchy and strong metadata bands. */
+.template-technical .resume-content h1{color:#182c3a;border-bottom:3px solid var(--accent);padding-bottom:.35em;letter-spacing:.025em}
+.template-technical .resume-content h1+p{padding:.48em .7em;background:color-mix(in srgb,var(--accent) 7%,white);border-left:3px solid var(--accent)}
+.template-technical .resume-content h2{margin-top:1.3em;border:0;border-bottom:1px solid #b9c8cf;padding:.25em 0;color:#203f54;letter-spacing:.08em}
+.template-technical .resume-content h3.resume-row{margin-top:.72em;padding:.42em .55em;background:#f3f6f7;border-left:3px solid var(--accent)}
+.template-technical .resume-content .row-main{color:#1f343f}
+.template-technical .resume-content .row-role{justify-self:center;color:var(--accent);font-size:.82em;font-weight:650;letter-spacing:.025em}
+.template-technical .resume-content .row-right{color:#526773}
+
+/* Timeline resumes: a left rail emphasizes chronology across experiences. */
+.template-timeline .resume-content h1{color:var(--accent);padding-bottom:.28em;border-bottom:1px solid color-mix(in srgb,var(--accent) 38%,white)}
+.template-timeline .resume-content h1+p{margin-left:.8em;padding-left:1em;border-left:2px solid color-mix(in srgb,var(--accent) 35%,white)}
+.template-timeline .resume-content h2{border:0;padding:0 0 .22em .65em;border-left:5px solid var(--accent);letter-spacing:.06em}
+.template-timeline .resume-content h3.resume-row{margin:.9em 0 .38em .55em;padding:.35em .55em .35em .9em;border-left:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 5%,white)}
+.template-timeline .resume-content h3.resume-row+ul,.template-timeline .resume-content h3.resume-row+p{margin-left:.55em;padding-left:1.8em;border-left:1px solid color-mix(in srgb,var(--accent) 28%,white)}
+.template-timeline .resume-content .row-role{color:var(--accent);font-weight:600}
+
+.mini-technical{border-left:3px solid #52758a}
+.mini-technical i:first-child{width:18px;background:#365f78}
+.mini-technical i:nth-child(3){width:100%;background:#a9bbc4}
+.mini-timeline{border-left:2px solid #7b5274}
+.mini-timeline i{margin-left:3px}
+.mini-timeline i:first-child{width:15px;background:#7b5274}
+@media(max-width:1100px){.template-list{flex-wrap:wrap}.template-option{flex:1 1 145px}}

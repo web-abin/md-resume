@@ -9,7 +9,13 @@ import { measureResumePages, MM_TO_PX } from '../lib/measure-resume';
 import { loadResumeFont } from '../lib/resume-fonts';
 import { boldSelection, LOCAL_FONT_SIZES, recordEdit, undoEdit, sizeSelection, type EditorHistory } from '../lib/editor-state';
 
-const templates = [{ id: 'classic', name: '清简', desc: '清晰 · 专业' }, { id: 'modern', name: '秩序', desc: '利落 · 现代' }, { id: 'serif', name: '书卷', desc: '沉静 · 经典' }] as const;
+const templates = [
+  { id: 'classic', name: '清简', desc: '通用 · 专业' },
+  { id: 'modern', name: '秩序', desc: '产品 · 运营' },
+  { id: 'serif', name: '书卷', desc: '教育 · 人文' },
+  { id: 'technical', name: '工程', desc: '技术 · 高密度' },
+  { id: 'timeline', name: '时轴', desc: '经历 · 强时序' },
+] as const;
 const subscribeToHydration = () => () => {};
 
 const colors = ['#34746a', '#395a89', '#7b5274', '#a66d3c', '#343a40'];
@@ -424,7 +430,7 @@ function ResumeEditor({ ready }: { ready: boolean }) {
         <p className="library-footnote">每次保存新增一个版本，不会覆盖旧版本。仅保存在当前浏览器；清理浏览器数据会丢失记录，请定期导出备份。</p>
       </section>
     </dialog>
-    <dialog ref={dialog} className="modal-dialog" onCancel={() => setHelp(false)} onClick={e => { if (e.target === e.currentTarget) setHelp(false); }}><section role="dialog" aria-modal="true" aria-labelledby="help-title" className="help-modal" onClick={e => e.stopPropagation()}><button className="modal-close" onClick={() => setHelp(false)} aria-label="关闭语法指南"><X size={20} /></button><span className="eyebrow">A LITTLE GUIDE</span><h2 id="help-title">几行文字，一份好简历。</h2><p>用简单的符号告诉我们，你希望怎样呈现。</p><dl><dt>姓名与求职方向</dt><dd><code># 林晓 · 产品设计师</code></dd><dt>章节标题</dt><dd><code>## 工作经历</code></dd><dt>公司与日期左右对齐</dt><dd><code>### 公司 · 职位 || 2023 — 至今</code></dd><dt>突出成果</dt><dd><code>- **核心成果**：描述你带来的改变</code></dd><dt>局部字号（11–24px，以及 26–38px 双数）</dt><dd>选中文字后使用工具栏「字号」；会生成受限的 span 标记，并随 Markdown 保存。</dd><dt>撤回操作</dt><dd>⌘Z / Ctrl+Z 或点击「撤回」，最多五步，刷新后记录清空。</dd><dt>添加链接</dt><dd><code>[作品集](https://example.com)</code></dd></dl><p className="help-footnote">支持标准 Markdown 列表、引用与表格。MVP 暂不支持照片、自定义 HTML 样式或手动分页。示例中的姓名与经历均为虚构。</p><button className="button primary" onClick={() => setHelp(false)}>开始写作</button></section></dialog>
+    <dialog ref={dialog} className="modal-dialog" onCancel={() => setHelp(false)} onClick={e => { if (e.target === e.currentTarget) setHelp(false); }}><section role="dialog" aria-modal="true" aria-labelledby="help-title" className="help-modal" onClick={e => e.stopPropagation()}><button className="modal-close" onClick={() => setHelp(false)} aria-label="关闭语法指南"><X size={20} /></button><span className="eyebrow">A LITTLE GUIDE</span><h2 id="help-title">几行文字，一份好简历。</h2><p>用简单的符号告诉我们，你希望怎样呈现。</p><dl><dt>姓名与求职方向</dt><dd><code># 林晓 · 产品设计师</code></dd><dt>章节标题</dt><dd><code>## 工作经历</code></dd><dt>公司与日期左右对齐</dt><dd><code>### 公司 · 职位 || 2023 — 至今</code></dd><dt>公司、职责与日期三段对齐</dt><dd><code>### 某科技公司 || AI 应用开发 || 2023 — 至今</code></dd><dt>突出成果</dt><dd><code>- **核心成果**：描述你带来的改变</code></dd><dt>局部字号（11–24px，以及 26–38px 双数）</dt><dd>选中文字后使用工具栏「字号」；会生成受限的 span 标记，并随 Markdown 保存。</dd><dt>撤回操作</dt><dd>⌘Z / Ctrl+Z 或点击「撤回」，最多五步，刷新后记录清空。</dd><dt>添加链接</dt><dd><code>[作品集](https://example.com)</code></dd></dl><p className="help-footnote">支持标准 Markdown 列表、引用与表格。MVP 暂不支持照片、自定义 HTML 样式或手动分页。示例中的姓名与经历均为虚构。</p><button className="button primary" onClick={() => setHelp(false)}>开始写作</button></section></dialog>
   </main>;
 
   function insert(text: string) {

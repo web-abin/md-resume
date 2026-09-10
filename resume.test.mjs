@@ -16,11 +16,15 @@ test('sample has a name, four sections, and work achievements', () => {
   assert.ok(doc.querySelectorAll('li').length >= 10);
 });
 
-test('heading and paragraph dates are aligned without losing inline Markdown', () => {
-  const doc = parse('### **某公司** || 2024 — 至今\n\n设计师 || 上海');
-  assert.equal(doc.querySelectorAll('.resume-row').length, 2);
+test('two- and three-column resume rows retain inline Markdown and semantic fields', () => {
+  const doc = parse('### **某公司** || 2024 — 至今\n\n### 数据平台 || 核心开发 || 2023 — 2024\n\n设计师 || 上海');
+  assert.equal(doc.querySelectorAll('.resume-row').length, 3);
   assert.equal(doc.querySelector('h3 strong').textContent, '某公司');
   assert.equal(doc.querySelector('h3 .row-right').textContent, '2024 — 至今');
+  const triple = doc.querySelector('.resume-row-3');
+  assert.equal(triple.querySelector('.row-main').textContent, '数据平台');
+  assert.equal(triple.querySelector('.row-role').textContent, '核心开发');
+  assert.equal(triple.querySelector('.row-right').textContent, '2023 — 2024');
 });
 
 test('ordinary Markdown tables, links, emphasis and lists retain semantics', () => {
@@ -54,17 +58,23 @@ test('untrusted saved settings cannot inject CSS or produce invalid page sizes',
   assert.equal(settings.lineHeight, 2);
 });
 
+test('all five resume templates survive settings normalization', () => {
+  for (const template of ['classic', 'modern', 'serif', 'technical', 'timeline']) {
+    assert.equal(normalizeSettings({ template }).template, template);
+  }
+});
+
 test('filenames handle empty resumes and remove filesystem separators', () => {
   assert.equal(documentName(''), '我的简历');
   assert.equal(documentName('# A/B:设计师?'), 'AB设计师');
   assert.ok(documentName('# ' + '长'.repeat(200)).length <= 70);
 });
 
-test('empty Markdown stays empty and ambiguous separators remain plain text', () => {
+test('empty Markdown stays empty and rows with too many separators remain plain text', () => {
   assert.equal(parse('').body.textContent, '');
-  const doc = parse('### 公司 || 日期 || 地点');
+  const doc = parse('### 公司 || 职责 || 日期 || 地点');
   assert.equal(doc.querySelectorAll('.resume-row').length, 0);
-  assert.equal(doc.querySelector('h3').textContent, '公司 || 日期 || 地点');
+  assert.equal(doc.querySelector('h3').textContent, '公司 || 职责 || 日期 || 地点');
 });
 
 
