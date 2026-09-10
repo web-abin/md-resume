@@ -145,6 +145,7 @@ test('storage corruption, quota failure and empty saves do not overwrite saved v
 });
 
 import { boldSelection, recordEdit, undoEdit, sizeSelection } from './lib/editor-state.ts';
+import { pdfFontStyleForCanvasFont } from './lib/pdf-font.ts';
 const historyFor = markdown => ({ present: { markdown, settings: { ...DEFAULTS }, start: 0, end: 0 }, past: [], group: null, at: 0 });
 test('undo retains exactly five operations and restores content with layout together', () => {
   let state = historyFor('original');
@@ -189,4 +190,12 @@ test('bold formatting wraps the selection and toggles the generated markers', ()
   assert.deepEqual(applied, { markdown: '**高级工程**师', start: 0, end: 8 });
   assert.deepEqual(boldSelection(applied.markdown, applied.start, applied.end), { markdown: '高级工程师', start: 0, end: 4 });
   assert.equal(boldSelection('文本', 1, 1), null);
+});
+
+test('PDF export keeps the embedded Chinese font selected for canvas text runs', () => {
+  const family = 'Noto Sans SC Variable';
+  assert.equal(pdfFontStyleForCanvasFont(`normal normal 400 15px ${family}, sans-serif`, family), 'normal');
+  assert.equal(pdfFontStyleForCanvasFont(`normal normal 650 18px ${family}, sans-serif`, family), 'bold');
+  assert.equal(pdfFontStyleForCanvasFont(`normal normal bold 30px ${family}, sans-serif`, family), 'bold');
+  assert.equal(pdfFontStyleForCanvasFont('normal normal 400 12px monospace', family), null);
 });

@@ -1,6 +1,7 @@
 import { documentName, type Settings } from './resume';
 import { measureResumePages, MM_TO_PX } from './measure-resume';
 import { loadResumeFont } from './resume-fonts';
+import { pdfFontStyleForCanvasFont } from './pdf-font';
 
 
 export async function exportResumePdf(source: HTMLElement, settings: Settings, markdown: string, progress: (message: string) => void) {
@@ -53,15 +54,22 @@ export async function exportResumePdf(source: HTMLElement, settings: Settings, m
     const fillText = vectorContext.fillText.bind(vectorContext);
     const strokeText = vectorContext.strokeText.bind(vectorContext);
     let textPageBottom = 297 - settings.margin;
+    const selectEmbeddedFont = () => {
+      // Some html2canvas font strings are not resolved by jsPDF's Canvas2D
+      // parser, which then falls back to Times despite the registered CJK font.
+      // Select the embedded face immediately before each matching text run.
+      const style = pdfFontStyleForCanvasFont(vectorContext.font, family);
+      if (style) pdf.setFont(family, style);
+    };
     const isOnPage = (x: number, y: number) => {
       const point = vectorContext.ctx.transform.applyToPoint({ x, y });
       return point.y >= settings.margin - .5 && point.y <= textPageBottom + .5;
     };
     vectorContext.fillText = (text, x, y, maxWidth) => {
-      if (isOnPage(x, y)) fillText(text, x, y, maxWidth);
+      if (isOnPage(x, y)) { selectEmbeddedFont(); fillText(text, x, y, maxWidth); }
     };
     vectorContext.strokeText = (text, x, y, maxWidth) => {
-      if (isOnPage(x, y)) strokeText(text, x, y, maxWidth);
+      if (isOnPage(x, y)) { selectEmbeddedFont(); strokeText(text, x, y, maxWidth); }
     };
     for (let i = 0; i < pages.length; i++) {
       progress(`正在生成文字 PDF（${i + 1}/${pages.length}）…`);
