@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import DOMPurify from 'dompurify';
-import { ArrowDownToLine, ArrowUpFromLine, Check, ChevronDown, FileText, HelpCircle, LayoutTemplate, PanelLeft, Printer, Moon, Sun, Save, FolderOpen, Trash2, Maximize, Minimize, Undo2, RotateCcw, SlidersHorizontal, X } from 'lucide-react';
-import { DEFAULTS, MAX_LENGTH, SAMPLE, STORAGE_KEY, LIBRARY_KEY, readResumeLibrary, saveResumeVersion, deleteResumeVersion, type SavedResume, documentName, normalizeSettings, renderMarkdown, type Settings } from '../lib/resume';
+import { ArrowDownToLine, ArrowUpFromLine, Check, ChevronDown, FileText, HelpCircle, LayoutTemplate, PanelLeft, Pencil, Printer, Moon, Sun, Save, FolderOpen, Trash2, Maximize, Minimize, Undo2, RotateCcw, SlidersHorizontal, X } from 'lucide-react';
+import { DEFAULTS, MAX_LENGTH, SAMPLE, STORAGE_KEY, LIBRARY_KEY, readResumeLibrary, saveResumeVersion, updateResumeVersion, deleteResumeVersion, type SavedResume, documentName, normalizeSettings, renderMarkdown, type Settings } from '../lib/resume';
 import { SANITIZE_CONFIG } from '../lib/sanitize';
 import { measureResumePages, MM_TO_PX } from '../lib/measure-resume';
 import { loadResumeFont } from '../lib/resume-fonts';
@@ -87,6 +87,7 @@ function ResumeEditor({ ready }: { ready: boolean }) {
   const [versions, setVersions] = useState<SavedResume[]>([]);
   const [libraryError, setLibraryError] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (libraryOpen) libraryDialog.current?.showModal();
@@ -114,9 +115,11 @@ function ResumeEditor({ ready }: { ready: boolean }) {
   function saveVersion() {
     if (!markdown.trim()) { setNotice('请先填写简历内容，再保存版本。'); return; }
     try {
-      setVersions(saveResumeVersion(localStorage, markdown, settings));
+      const currentEditingId = editingVersionId;
+      setVersions(currentEditingId ? updateResumeVersion(localStorage, currentEditingId, markdown, settings) : saveResumeVersion(localStorage, markdown, settings));
+      setEditingVersionId(null);
       setLibraryError('');
-      setNotice('已保存一个新版本，内容和排版设置可在「我的简历」中查看。');
+      setNotice(currentEditingId ? '已更新此版本，原记录已直接修改。' : '已保存一个新版本，内容和排版设置可在「我的简历」中查看。');
     } catch { setNotice('版本保存失败，已有版本未被覆盖。浏览器存储可能已满或不可用，请先导出备份。'); }
   }
 
@@ -126,6 +129,7 @@ function ResumeEditor({ ready }: { ready: boolean }) {
       const entry = current.find(item => item.id === id);
       setVersions(current);
       if (!entry) { setLibraryError('此版本已被删除，请选择其他版本。'); return; }
+      setEditingVersionId(null);
       changeEditor({ markdown: entry.markdown, settings: { ...entry.settings } }, { start: 0, end: 0 });
       setPdfResult(null);
       setLibraryOpen(false);
@@ -135,9 +139,26 @@ function ResumeEditor({ ready }: { ready: boolean }) {
     } catch { setLibraryError('无法读取此版本，当前编辑内容未改变。请检查浏览器存储权限。'); }
   }
 
+  function editVersion(id: string) {
+    try {
+      const current = readResumeLibrary(localStorage);
+      const entry = current.find(item => item.id === id);
+      setVersions(current);
+      if (!entry) { setLibraryError('此版本已被删除，请选择其他版本。'); return; }
+      setEditingVersionId(entry.id);
+      changeEditor({ markdown: entry.markdown, settings: { ...entry.settings } }, { start: 0, end: 0 });
+      setPdfResult(null);
+      setLibraryOpen(false);
+      setTab('edit');
+      setNotice(`已载入「${entry.name}」，修改后点击右上角「保存」会更新原记录。`);
+      requestAnimationFrame(() => { editor.current?.focus(); editor.current?.scrollTo({ top: 0 }); canvas.current?.scrollTo({ top: 0, left: 0 }); });
+    } catch { setLibraryError('无法读取此版本，当前编辑内容未改变。请检查浏览器存储权限。'); }
+  }
+
   function removeVersion(id: string) {
     try {
       setVersions(deleteResumeVersion(localStorage, id));
+      if (editingVersionId === id) setEditingVersionId(null);
       setLibraryError('');
       setDeleteId(null);
       setNotice('已删除该版本，当前编辑内容保持不变。');
@@ -352,7 +373,7 @@ function ResumeEditor({ ready }: { ready: boolean }) {
     <style>{`@page { size: A4; margin: ${settings.margin}mm; }`}</style>
     <header className="topbar">
       <div className="header-left"><div className="brand" aria-label="简历"><span className="brand-icon"><FileText size={21} strokeWidth={1.7} /></span><b>简历<span className="brand-dot">.</span></b><span className="brand-caption">让经历，自有章法</span></div><button className="button secondary library-toggle" disabled={!ready} aria-haspopup="dialog" aria-expanded={libraryOpen} aria-controls="resume-library" onClick={openLibrary}><FolderOpen size={16} />我的简历<ChevronDown size={13} /></button></div>
-      <div className="top-actions"><button className="button theme-toggle" aria-label={theme === 'light' ? '切换暗色模式' : '切换亮色模式'} title={theme === 'light' ? '暗色模式' : '亮色模式'} onClick={() => setTheme(current => current === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button><button className="button secondary save-version" disabled={!ready} onClick={saveVersion} title="保存当前内容和排版为一个新版本"><Save size={16} />保存</button><button className="button secondary export-md" onClick={download}><ArrowDownToLine size={15} />导出 Markdown</button><button className="button secondary print-button" title="系统打印：可复制文字，分页以打印预览为准" aria-label="打印文字版" onClick={() => void print()}><Printer size={16} /></button><button className="button primary" disabled={!ready || exporting} onClick={() => void exportPdf()}><ArrowDownToLine size={16} />{exporting ? '正在导出…' : '导出 PDF'}</button></div>
+      <div className="top-actions"><button className="button theme-toggle" aria-label={theme === 'light' ? '切换暗色模式' : '切换亮色模式'} title={theme === 'light' ? '暗色模式' : '亮色模式'} onClick={() => setTheme(current => current === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button><button className="button secondary save-version" disabled={!ready} onClick={saveVersion} title={editingVersionId ? '保存并更新当前版本' : '保存当前内容和排版为一个新版本'}><Save size={16} />{editingVersionId ? '更新版本' : '保存'}</button><button className="button secondary export-md" onClick={download}><ArrowDownToLine size={15} />导出 Markdown</button><button className="button secondary print-button" title="系统打印：可复制文字，分页以打印预览为准" aria-label="打印文字版" onClick={() => void print()}><Printer size={16} /></button><button className="button primary" disabled={!ready || exporting} onClick={() => void exportPdf()}><ArrowDownToLine size={16} />{exporting ? '正在导出…' : '导出 PDF'}</button></div>
     </header>
 
     <div className="mobile-tabs"><button className={tab === 'edit' ? 'active' : ''} onClick={() => setTab('edit')}>编辑内容</button><button className={tab === 'preview' ? 'active' : ''} onClick={() => setTab('preview')}>简历预览</button></div>
@@ -422,12 +443,12 @@ function ResumeEditor({ ready }: { ready: boolean }) {
     <dialog id="resume-library" ref={libraryDialog} className="modal-dialog library-dialog" aria-labelledby="library-title" onCancel={() => setLibraryOpen(false)} onClick={e => { if (e.target === e.currentTarget) setLibraryOpen(false); }}>
       <section className="library-sheet">
         <div className="library-heading"><h2 id="library-title">我的简历</h2><button onClick={() => setLibraryOpen(false)} aria-label="关闭我的简历"><X size={21} /></button></div>
-        <p className="library-description">{versions.length} 个已保存版本。点击简历恢复内容、模板、主题色、字号、行距和页边距，将替换当前编辑内容。</p>
+        <p className="library-description">{versions.length} 个已保存版本。点击简历可恢复内容和排版；点击「编辑」后保存会直接更新原记录，不会新增版本。</p>
         {libraryError ? <div className="library-empty" role="alert"><p>{libraryError}</p><button className="button secondary" onClick={openLibrary}>重新读取</button></div> : versions.length === 0 ? <div className="library-empty"><FolderOpen size={34} /><h3>还没有保存的简历</h3><p>关闭窗口后，点击右上角「保存」，<br />就能留下当前简历和排版的完整版本。</p></div> : <ul className="library-list" aria-label="已保存的简历版本">{versions.map(entry => <li key={entry.id} className="saved-resume">
-          <button className="saved-resume-main" aria-label={`恢复 ${entry.name}，保存于 ${new Date(entry.savedAt).toLocaleString('zh-CN', { hour12: false })}`} onClick={() => restoreVersion(entry.id)}><FileText size={20} /><span><strong>{entry.name}</strong><time dateTime={entry.savedAt}>{new Date(entry.savedAt).toLocaleString('zh-CN', { hour12: false })}</time><span className="saved-resume-meta"><i style={{ background: entry.settings.color }} />{templates.find(t => t.id === entry.settings.template)?.name} · {entry.settings.fontSize} px · {entry.settings.lineHeight.toFixed(1)} 倍行距 · {entry.settings.margin} mm 页边距</span></span></button>
-          <div className="saved-resume-actions">{deleteId === entry.id ? <><span>确定删除此版本？无法撤销。</span><div><button className="text-button" onClick={() => setDeleteId(null)}>取消</button><button className="delete-version" onClick={() => removeVersion(entry.id)}>确认删除</button></div></> : <><span>{entry.markdown.length.toLocaleString()} 字符 · 点击上方恢复</span><button className="delete-version" aria-label={`删除 ${entry.name}`} onClick={() => setDeleteId(entry.id)}><Trash2 size={13} />删除</button></>}</div>
+          <button className="saved-resume-main" aria-label={`恢复 ${entry.name}，保存于 ${new Date(entry.savedAt).toLocaleString('zh-CN', { hour12: false })}`} onClick={() => restoreVersion(entry.id)}><FileText size={20} /><span><span className="saved-resume-title-row"><strong>{entry.name}</strong><time dateTime={entry.savedAt}>{new Date(entry.savedAt).toLocaleString('zh-CN', { hour12: false })}</time></span><span className="saved-resume-meta"><i style={{ background: entry.settings.color }} />{templates.find(t => t.id === entry.settings.template)?.name} · {entry.settings.fontSize} px · {entry.settings.lineHeight.toFixed(1)} 倍行距 · {entry.settings.margin} mm 页边距</span></span></button>
+          <div className="saved-resume-actions">{deleteId === entry.id ? <><span>确定删除此版本？无法撤销。</span><div><button className="text-button" onClick={() => setDeleteId(null)}>取消</button><button className="delete-version" onClick={() => removeVersion(entry.id)}>确认删除</button></div></> : <><span>{entry.markdown.length.toLocaleString()} 字符 · 点击上方恢复</span><div><button className="edit-version" aria-label={`编辑 ${entry.name}`} onClick={() => editVersion(entry.id)}><Pencil size={13} />编辑</button><button className="delete-version" aria-label={`删除 ${entry.name}`} onClick={() => setDeleteId(entry.id)}><Trash2 size={13} />删除</button></div></>}</div>
         </li>)}</ul>}
-        <p className="library-footnote">每次保存新增一个版本，不会覆盖旧版本。仅保存在当前浏览器；清理浏览器数据会丢失记录，请定期导出备份。</p>
+        <p className="library-footnote">直接点击「保存」会新增版本；从「编辑」进入后保存会更新原版本。仅保存在当前浏览器；清理浏览器数据会丢失记录，请定期导出备份。</p>
       </section>
     </dialog>
     <dialog ref={dialog} className="modal-dialog" onCancel={() => setHelp(false)} onClick={e => { if (e.target === e.currentTarget) setHelp(false); }}><section role="dialog" aria-modal="true" aria-labelledby="help-title" className="help-modal" onClick={e => e.stopPropagation()}><button className="modal-close" onClick={() => setHelp(false)} aria-label="关闭语法指南"><X size={20} /></button><span className="eyebrow">A LITTLE GUIDE</span><h2 id="help-title">几行文字，一份好简历。</h2><p>用简单的符号告诉我们，你希望怎样呈现。</p><dl><dt>姓名与求职方向</dt><dd><code># 林晓 · 产品设计师</code></dd><dt>章节标题</dt><dd><code>## 工作经历</code></dd><dt>公司与日期左右对齐</dt><dd><code>### 公司 · 职位 || 2023 — 至今</code></dd><dt>公司、职责与日期三段对齐</dt><dd><code>### 某科技公司 || AI 应用开发 || 2023 — 至今</code></dd><dt>突出成果</dt><dd><code>- **核心成果**：描述你带来的改变</code></dd><dt>局部字号（11–24px，以及 26–38px 双数）</dt><dd>选中文字后使用工具栏「字号」；会生成受限的 span 标记，并随 Markdown 保存。</dd><dt>撤回操作</dt><dd>⌘Z / Ctrl+Z 或点击「撤回」，最多五步，刷新后记录清空。</dd><dt>添加链接</dt><dd><code>[作品集](https://example.com)</code></dd></dl><p className="help-footnote">支持标准 Markdown 列表、引用与表格。MVP 暂不支持照片、自定义 HTML 样式或手动分页。示例中的姓名与经历均为虚构。</p><button className="button primary" onClick={() => setHelp(false)}>开始写作</button></section></dialog>

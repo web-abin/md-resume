@@ -106,6 +106,17 @@ export function saveResumeVersion(storage: ResumeStorage, markdown: string, sett
   return next;
 }
 
+export function updateResumeVersion(storage: ResumeStorage, id: string, markdown: string, settings: Settings): SavedResume[] {
+  if (!markdown.trim() || markdown.length > MAX_LENGTH) throw new Error('请先填写有效的简历内容');
+  const current = readResumeLibrary(storage);
+  const index = current.findIndex(entry => entry.id === id);
+  if (index < 0) throw new Error('要更新的简历版本不存在');
+  const next = [...current];
+  next[index] = { ...next[index], name: documentName(markdown), markdown, settings: normalizeSettings(settings) };
+  storage.setItem(LIBRARY_KEY, JSON.stringify({ version: 1, resumes: next }));
+  return next;
+}
+
 export function deleteResumeVersion(storage: ResumeStorage, id: string): SavedResume[] {
   const next = readResumeLibrary(storage).filter(entry => entry.id !== id);
   storage.setItem(LIBRARY_KEY, JSON.stringify({ version: 1, resumes: next }));

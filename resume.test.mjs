@@ -123,7 +123,7 @@ test('oversize PDF blocks cannot trap pagination in a loop', () => {
   assert.throws(() => paginate(100, 0, []));
 });
 
-import { LIBRARY_KEY, STORAGE_KEY, readResumeLibrary, saveResumeVersion, deleteResumeVersion } from './lib/resume.ts';
+import { LIBRARY_KEY, STORAGE_KEY, readResumeLibrary, saveResumeVersion, updateResumeVersion, deleteResumeVersion } from './lib/resume.ts';
 const memoryStorage = () => {
   const records = new Map();
   return { getItem: key => records.get(key) ?? null, setItem: (key, value) => records.set(key, value) };
@@ -145,8 +145,15 @@ test('manual versions survive storage reload with exact Markdown and all layout 
   assert.deepEqual(reloaded[1].settings, expected);
   assert.equal(reloaded[0].markdown, '# 同名简历\n第二版');
   assert.equal(storage.getItem(STORAGE_KEY), 'working draft');
-  const remaining = deleteResumeVersion(storage, reloaded[0].id);
-  assert.deepEqual(remaining, [reloaded[1]]);
+  const updated = updateResumeVersion(storage, reloaded[1].id, '# 更新后的简历\n内容', { ...expected, template: 'technical' });
+  assert.equal(updated.length, 2);
+  assert.equal(updated[1].id, reloaded[1].id);
+  assert.equal(updated[1].name, '更新后的简历');
+  assert.equal(updated[1].savedAt, reloaded[1].savedAt);
+  assert.equal(updated[1].settings.template, 'technical');
+  assert.throws(() => updateResumeVersion(storage, 'missing', '# 不存在', DEFAULTS));
+  const remaining = deleteResumeVersion(storage, updated[0].id);
+  assert.deepEqual(remaining, [updated[1]]);
   assert.deepEqual(readResumeLibrary(storage), remaining);
   assert.equal(storage.getItem(STORAGE_KEY), 'working draft');
 });
