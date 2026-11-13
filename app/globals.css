@@ -160,7 +160,13 @@ html, body, .app { background: var(--ui-bg); color: var(--ui-text); }
 .library-sheet { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: 16px; padding: 26px; display: flex; flex-direction: column; max-height: 82dvh; box-shadow: 0 20px 80px #102b2230; }
 .library-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .library-heading h2 { font-size: 22px; font-weight: 600; margin: 0; }
-.library-heading button { background: transparent; color: var(--ui-muted); padding: 6px; border-radius: 6px; }
+.library-heading-actions { display: flex; align-items: center; gap: 12px; }
+.library-close { background: transparent; color: var(--ui-muted); padding: 6px; border-radius: 6px; }
+.resume-name-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--ui-border); }
+.resume-name-form label { font-size: 13px; color: var(--ui-muted); }
+.resume-name-form input { flex: 1 1 180px; min-width: 0; width: 100%; border: 1px solid var(--ui-border); border-radius: 6px; padding: 8px; background: var(--ui-surface); color: var(--ui-text); font: inherit; font-size: 16px; }
+.resume-name-form > div { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.resume-name-form p { flex-basis: 100%; margin: 0; color: var(--ui-text); font-size: 13px; }
 .library-description { font-size: 13px; line-height: 1.8; color: var(--ui-muted); margin: 10px 0 20px; }
 .library-list { list-style: none; margin: 0; padding: 0 3px 3px; overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
 .saved-resume { border: 1px solid var(--ui-border); border-radius: 10px; margin: 0 0 10px; overflow: hidden; }

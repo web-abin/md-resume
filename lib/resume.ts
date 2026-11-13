@@ -112,13 +112,23 @@ export function updateResumeVersion(storage: ResumeStorage, id: string, markdown
   const index = current.findIndex(entry => entry.id === id);
   if (index < 0) throw new Error('要更新的简历版本不存在');
   const next = [...current];
-  next[index] = { ...next[index], name: documentName(markdown), markdown, settings: normalizeSettings(settings) };
+  next[index] = { ...next[index], markdown, settings: normalizeSettings(settings) };
   storage.setItem(LIBRARY_KEY, JSON.stringify({ version: 1, resumes: next }));
   return next;
 }
 
 export function deleteResumeVersion(storage: ResumeStorage, id: string): SavedResume[] {
   const next = readResumeLibrary(storage).filter(entry => entry.id !== id);
+  storage.setItem(LIBRARY_KEY, JSON.stringify({ version: 1, resumes: next }));
+  return next;
+}
+
+export function renameResumeVersion(storage: ResumeStorage, id: string, name: string): SavedResume[] {
+  const trimmed = name.trim();
+  if (!trimmed || trimmed.length > 70) throw new Error('简历名称须为 1–70 个字符');
+  const current = readResumeLibrary(storage);
+  if (!current.some(entry => entry.id === id)) throw new Error('要重命名的简历不存在');
+  const next = current.map(entry => entry.id === id ? { ...entry, name: trimmed } : entry);
   storage.setItem(LIBRARY_KEY, JSON.stringify({ version: 1, resumes: next }));
   return next;
 }

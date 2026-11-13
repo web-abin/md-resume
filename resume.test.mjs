@@ -123,7 +123,7 @@ test('oversize PDF blocks cannot trap pagination in a loop', () => {
   assert.throws(() => paginate(100, 0, []));
 });
 
-import { LIBRARY_KEY, STORAGE_KEY, readResumeLibrary, saveResumeVersion, updateResumeVersion, deleteResumeVersion } from './lib/resume.ts';
+import { LIBRARY_KEY, STORAGE_KEY, readResumeLibrary, saveResumeVersion, updateResumeVersion, deleteResumeVersion, renameResumeVersion } from './lib/resume.ts';
 const memoryStorage = () => {
   const records = new Map();
   return { getItem: key => records.get(key) ?? null, setItem: (key, value) => records.set(key, value) };
@@ -148,7 +148,7 @@ test('manual versions survive storage reload with exact Markdown and all layout 
   const updated = updateResumeVersion(storage, reloaded[1].id, '# 更新后的简历\n内容', { ...expected, template: 'technical' });
   assert.equal(updated.length, 2);
   assert.equal(updated[1].id, reloaded[1].id);
-  assert.equal(updated[1].name, '更新后的简历');
+  assert.equal(updated[1].name, '同名简历');
   assert.equal(updated[1].savedAt, reloaded[1].savedAt);
   assert.equal(updated[1].settings.template, 'technical');
   assert.throws(() => updateResumeVersion(storage, 'missing', '# 不存在', DEFAULTS));
@@ -156,6 +156,28 @@ test('manual versions survive storage reload with exact Markdown and all layout 
   assert.deepEqual(remaining, [updated[1]]);
   assert.deepEqual(readResumeLibrary(storage), remaining);
   assert.equal(storage.getItem(STORAGE_KEY), 'working draft');
+});
+
+test('renaming persists independently of content across repeated updates', () => {
+  const storage = memoryStorage();
+  const first = saveResumeVersion(storage, '# 原始姓名', DEFAULTS)[0];
+  const other = saveResumeVersion(storage, '# 另一份简历', DEFAULTS)[0];
+  const renamed = renameResumeVersion(storage, first.id, '  前端岗位 · 定制版  ');
+  assert.deepEqual(renamed.find(entry => entry.id === first.id), { ...first, name: '前端岗位 · 定制版' });
+  for (const content of ['# 修改姓名', '# 再次修改姓名']) {
+    const updated = updateResumeVersion(storage, first.id, content, DEFAULTS);
+    assert.equal(updated.length, 2);
+    assert.equal(updated.find(entry => entry.id === first.id).name, '前端岗位 · 定制版');
+    assert.equal(updated.find(entry => entry.id === first.id).markdown, content);
+    assert.deepEqual(updated.find(entry => entry.id === other.id), other);
+  }
+  assert.equal(readResumeLibrary(storage).find(entry => entry.id === first.id).name, '前端岗位 · 定制版');
+  const before = storage.getItem(LIBRARY_KEY);
+  for (const name of ['', '   ', '长'.repeat(71)]) assert.throws(() => renameResumeVersion(storage, first.id, name));
+  assert.throws(() => renameResumeVersion(storage, 'missing', '新名称'));
+  const fullStorage = { getItem: storage.getItem, setItem: () => { throw new Error('QuotaExceededError'); } };
+  assert.throws(() => renameResumeVersion(fullStorage, first.id, '新名称'));
+  assert.equal(storage.getItem(LIBRARY_KEY), before);
 });
 
 test('storage corruption, quota failure and empty saves do not overwrite saved versions', () => {
