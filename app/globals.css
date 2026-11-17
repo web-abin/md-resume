@@ -150,13 +150,12 @@ html, body, .app { background: var(--ui-bg); color: var(--ui-text); }
 .text-button:hover,.reset-layout:hover{color:var(--ui-accent)}
 
 /* Saved versions live in a scrollable dialog, separate from the working draft. */
-.header-left { display: flex; align-items: center; gap: 22px; min-width: 0; }
+.header-left { display: flex; align-items: center; gap: 22px; min-width: 0; flex: 1; }
+.header-left .brand, .library-toggle, .top-actions { flex-shrink: 0; }
 .library-toggle { white-space: nowrap; color: var(--ui-text); }
 .library-toggle[aria-expanded=true] { border-color: var(--ui-accent); background: var(--ui-muted-bg); }
 .save-version { white-space: nowrap; }
-.current-resume { display: flex; align-items: baseline; gap: 8px; flex-shrink: 0; min-width: 0; margin: 14px 28px 10px; color: var(--ui-text); }
-.current-resume > span { flex-shrink: 0; font-size: 13px; }
-.current-resume h1 { min-width: 0; margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; overflow-wrap: anywhere; }
+.current-resume { display: block; min-width: 0; max-width: 15em; margin-right: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ui-muted); font-size: 13px; line-height: 1.5; }
 .draft-status { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .draft-status.error { color: #c35252; }
 .library-dialog { width: 650px; max-width: calc(100vw - 28px); color: var(--ui-text); }
@@ -196,16 +195,16 @@ html[data-theme=dark] .delete-version, html[data-theme=dark] .draft-status.error
 .library-empty p { font-size: 13px; line-height: 1.8; margin: 0; }
 .library-footnote { border-top: 1px solid var(--ui-border); padding-top: 14px; margin: 14px 0 0; font-size: 12px; color: var(--ui-subtle); line-height: 1.7; }
 @media(max-width:1250px) { .header-left .brand-caption { display: none; } .header-left { gap: 16px; } }
-@media(max-width:1100px) { .current-resume { margin-inline: 18px; } }
-@media(max-width:800px) and (min-width:681px) { .topbar { padding: 0 18px; } .top-actions { gap: 6px; } .export-md { width: 36px; padding: 0; font-size: 0; gap: 0; } }
+@media(max-width:1000px) and (min-width:681px) { .topbar { padding: 0 18px; } .top-actions { gap: 6px; } .export-md { width: 36px; padding: 0; font-size: 0; gap: 0; } }
+@media(max-width:760px) and (min-width:681px) { .header-left .brand b { display: none; } }
 @media(max-width:680px) {
   .topbar { height: auto; min-height: 112px; padding: 10px 14px; flex-wrap: wrap; gap: 10px; }
-  .header-left { width: 100%; justify-content: space-between; gap: 12px; }
+  .header-left { width: 100%; flex-basis: 100%; justify-content: flex-start; gap: 12px; }
   .library-toggle { font-size: 13px; height: 34px; }
   .top-actions { width: 100%; justify-content: flex-end; gap: 8px; }
   .top-actions .theme-toggle { margin-right: auto; }
   .save-version { font-size: 13px; }
-  .current-resume { margin-inline: 14px; }
+  .current-resume { margin-right: 0; font-size: 12px; }
   .library-sheet { padding: 18px 14px; }
   .library-heading h2 { font-size: 20px; }
   .saved-resume-main { padding: 14px 12px; }
@@ -217,7 +216,7 @@ html[data-theme=dark] .delete-version, html[data-theme=dark] .draft-status.error
 
 /* Give the editor the space previously occupied by the introduction. */
 @media screen {
-  .workspace { margin-top: 0; }
+  .workspace { margin-top: 18px; }
   .editor-panel { container-type: inline-size; }
   .editor-header-actions { gap: 8px!important; flex-shrink: 0; }
   .editor-help { color: var(--ui-muted); }
@@ -231,12 +230,12 @@ html[data-theme=dark] .delete-version, html[data-theme=dark] .draft-status.error
   .editor-help { padding: 7px; }
 }
 @media screen and (max-width:1100px) {
-  .editor-panel, .preview-panel { height: max(360px, calc(100dvh - 180px)); }
+  .editor-panel, .preview-panel { height: max(360px, calc(100dvh - 148px)); }
 }
 @media screen and (max-width:680px) {
-  .mobile-tabs { margin-top: 0; }
+  .mobile-tabs { margin-top: 14px; }
   .workspace { margin-top: 0; }
-  .editor-panel, .preview-panel { height: max(360px, calc(100dvh - 266px)); }
+  .editor-panel, .preview-panel { height: max(360px, calc(100dvh - 230px)); }
 }
 @media print { .current-resume { display: none!important; } }
 
