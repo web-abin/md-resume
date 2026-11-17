@@ -91,6 +91,7 @@ function ResumeEditor({ ready }: { ready: boolean }) {
   const [resumeName, setResumeName] = useState('');
   const [nameError, setNameError] = useState('');
   const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
+  const editingResumeName = versions.find(entry => entry.id === editingVersionId)?.name || '未保存的简历';
 
   useEffect(() => {
     if (libraryOpen) libraryDialog.current?.showModal();
@@ -383,6 +384,10 @@ function ResumeEditor({ ready }: { ready: boolean }) {
       <div className="header-left"><div className="brand" aria-label="简历"><span className="brand-icon"><FileText size={21} strokeWidth={1.7} /></span><b>简历<span className="brand-dot">.</span></b><span className="brand-caption">让经历，自有章法</span></div><button className="button secondary library-toggle" disabled={!ready} aria-haspopup="dialog" aria-expanded={libraryOpen} aria-controls="resume-library" onClick={openLibrary}><FolderOpen size={16} />我的简历<ChevronDown size={13} /></button></div>
       <div className="top-actions"><button className="button theme-toggle" aria-label={theme === 'light' ? '切换暗色模式' : '切换亮色模式'} title={theme === 'light' ? '暗色模式' : '亮色模式'} onClick={() => setTheme(current => current === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button><button className="button secondary save-version" disabled={!ready} onClick={saveVersion} title={editingVersionId ? '保存并更新当前版本' : '保存当前内容和排版为一个新版本'}><Save size={16} />{editingVersionId ? '更新版本' : '保存'}</button><button className="button secondary export-md" onClick={download}><ArrowDownToLine size={15} />导出 Markdown</button><button className="button secondary print-button" title="系统打印：可复制文字，分页以打印预览为准" aria-label="打印文字版" onClick={() => void print()}><Printer size={16} /></button><button className="button primary" disabled={!ready || exporting} onClick={() => void exportPdf()}><ArrowDownToLine size={16} />{exporting ? '正在导出…' : '导出 PDF'}</button></div>
     </header>
+
+    <div className="current-resume" role="status" aria-live="polite" aria-atomic="true">
+      <span>当前编辑：</span><h1>{editingResumeName}</h1>
+    </div>
 
     <div className="mobile-tabs"><button className={tab === 'edit' ? 'active' : ''} onClick={() => setTab('edit')}>编辑内容</button><button className={tab === 'preview' ? 'active' : ''} onClick={() => setTab('preview')}>简历预览</button></div>
 
